@@ -1,0 +1,10 @@
+DEFINED_PHASES=install
+DESCRIPTION=Sass reference implementation written in Dart (prebuilt)
+EAPI=8
+HOMEPAGE=https://sass-lang.com/ https://github.com/sass/dart-sass
+KEYWORDS=~amd64
+LICENSE=MIT
+RESTRICT=strip
+SLOT=0
+SRC_URI=https://github.com/sass/dart-sass/releases/download/1.98.0/dart-sass-1.98.0-linux-x64.tar.gz
+_md5_=3ad2cf65db96f2ca90568db94808a149
