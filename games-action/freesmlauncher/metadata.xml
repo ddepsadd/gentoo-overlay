@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>depsad@localhost</email>
+		<name>depsad</name>
+	</maintainer>
+	<longdescription lang="en">
+		Freesm Launcher is a fork of Prism Launcher that removes offline account
+		restrictions, adds custom authentication server support (Ely.by,
+		authlib-injector) while keeping Microsoft (licensed) login, plus extra
+		theming and customization. Microsoft client ID and CurseForge API key are
+		baked into the upstream CMakeLists by default, so source builds keep both
+		licensed login and CurseForge mod downloads working.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">FreesmTeam/FreesmLauncher</remote-id>
+	</upstream>
+</pkgmetadata>
