@@ -1,0 +1,19 @@
+Collapse the decorative footer strip.
+
+MainFooterView allocates a fixed 24px band and fills it with the accent
+colour; it renders no content at all. Zeroing the height removes the
+strip and returns the space to the docking area, and the layout already
+derives available height from get_height().
+
+Not upstream; cosmetic local preference.
+--- a/squalr/src/views/main_window/main_window_view.rs
++++ b/squalr/src/views/main_window/main_window_view.rs
+@@ -209,7 +209,7 @@
+             Box::new(plugins_view),
+         ]);
+         let dock_root_view = DockRootView::new(app_context.clone(), dock_view_data.clone());
+-        let main_footer_view = MainFooterView::new(app_context.clone(), corner_radius, 24.0);
++        let main_footer_view = MainFooterView::new(app_context.clone(), corner_radius, 0.0);
+         let struct_viewer_view_data = app_context
+             .dependency_container
+             .get_dependency::<StructViewerViewData>();

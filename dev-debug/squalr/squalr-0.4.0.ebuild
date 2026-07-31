@@ -1,0 +1,864 @@
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+# std::simd API here was written against nightly-2026-02-07; bump/lower if needed.
+RUST_MIN_VER="1.90.0"
+
+CRATES="
+	ab_glyph@0.2.32
+	ab_glyph_rasterizer@0.1.10
+	accesskit@0.21.1
+	accesskit_atspi_common@0.14.2
+	accesskit_consumer@0.31.0
+	accesskit_macos@0.22.2
+	accesskit_unix@0.17.2
+	accesskit_windows@0.29.2
+	accesskit_winit@0.29.2
+	adler2@2.0.1
+	ahash@0.8.12
+	aho-corasick@1.1.4
+	aligned-vec@0.6.4
+	aligned@0.4.3
+	allocator-api2@0.2.21
+	alsa-sys@0.3.1
+	alsa@0.9.1
+	android-activity@0.6.0
+	android-properties@0.2.2
+	android_log-sys@0.3.2
+	android_system_properties@0.1.5
+	ansi_term@0.12.1
+	anstream@0.6.21
+	anstyle-parse@0.2.7
+	anstyle-query@1.1.5
+	anstyle-wincon@3.0.11
+	anstyle@1.0.13
+	anyhow@1.0.101
+	arbitrary@1.4.2
+	arboard@3.6.1
+	arc-swap@1.8.1
+	arg_enum_proc_macro@0.3.4
+	arrayref@0.3.9
+	arrayvec@0.7.6
+	as-raw-xcb-connection@1.0.1
+	as-slice@0.2.1
+	ash@0.38.0+1.3.281
+	async-broadcast@0.7.2
+	async-channel@2.5.0
+	async-executor@1.13.3
+	async-io@2.6.0
+	async-lock@3.4.2
+	async-process@2.5.0
+	async-recursion@1.1.1
+	async-signal@0.2.13
+	async-task@4.7.1
+	async-trait@0.1.89
+	atomic-waker@1.1.2
+	atomic@0.6.1
+	atspi-common@0.9.0
+	atspi-connection@0.9.0
+	atspi-proxies@0.9.0
+	atspi@0.25.0
+	atty@0.2.14
+	autocfg@1.5.0
+	av-scenechange@0.14.1
+	av1-grain@0.2.5
+	avif-serialize@0.8.6
+	base64@0.22.1
+	base64ct@1.8.3
+	bit-set@0.5.3
+	bit-set@0.8.0
+	bit-vec@0.6.3
+	bit-vec@0.8.0
+	bit_field@0.10.3
+	bitflags@1.3.2
+	bitflags@2.10.0
+	bitstream-io@4.9.0
+	block-buffer@0.10.4
+	block2@0.5.1
+	block2@0.6.2
+	block@0.1.6
+	blocking@1.6.2
+	bstr@1.12.1
+	built@0.8.0
+	bumpalo@3.19.1
+	bus@2.4.1
+	bytemuck@1.25.0
+	bytemuck_derive@1.10.2
+	byteorder-lite@0.1.0
+	bytes@1.11.1
+	calloop-wayland-source@0.3.0
+	calloop-wayland-source@0.4.1
+	calloop@0.13.0
+	calloop@0.14.3
+	castaway@0.2.4
+	cc@1.2.55
+	cesu8@1.1.0
+	cfg-if@1.0.4
+	cfg_aliases@0.2.1
+	cgl@0.3.2
+	chrono@0.4.43
+	clap@2.34.0
+	clipboard-win@5.4.1
+	codespan-reporting@0.12.0
+	color_quant@1.1.0
+	colorchoice@1.0.4
+	combine@4.6.7
+	compact_str@0.9.0
+	concurrent-queue@2.5.0
+	convert_case@0.10.0
+	core-foundation-sys@0.8.7
+	core-foundation@0.10.1
+	core-foundation@0.9.4
+	core-graphics-types@0.1.3
+	core-graphics-types@0.2.0
+	core-graphics@0.23.2
+	core2@0.4.0
+	core_maths@0.1.1
+	coreaudio-rs@0.13.0
+	cpal@0.16.0
+	cpufeatures@0.2.17
+	crc32fast@1.5.0
+	crossbeam-channel@0.5.15
+	crossbeam-deque@0.8.6
+	crossbeam-epoch@0.9.18
+	crossbeam-utils@0.8.21
+	crossterm@0.29.0
+	crossterm_winapi@0.9.1
+	crunchy@0.2.4
+	crypto-common@0.1.7
+	csscolorparser@0.6.2
+	cursor-icon@1.2.0
+	darling@0.23.0
+	darling_core@0.23.0
+	darling_macro@0.23.0
+	dasp_sample@0.11.0
+	data-url@0.3.2
+	deltae@0.3.2
+	der@0.7.10
+	deranged@0.5.6
+	derive_more-impl@2.1.1
+	derive_more@2.1.1
+	destructure_traitobject@0.2.0
+	digest@0.10.7
+	directories@6.0.0
+	dirs-sys@0.5.0
+	dirs@6.0.0
+	dispatch2@0.3.0
+	dispatch@0.2.0
+	displaydoc@0.2.5
+	dlib@0.5.2
+	doctest-file@1.0.0
+	document-features@0.2.12
+	downcast-rs@1.2.1
+	dpi@0.1.2
+	ecolor@0.33.3
+	eframe@0.33.3
+	egui-wgpu@0.33.3
+	egui-winit@0.33.3
+	egui@0.33.3
+	egui_glow@0.33.3
+	either@1.15.0
+	emath@0.33.3
+	encoding-index-japanese@1.20141219.5
+	encoding-index-korean@1.20141219.5
+	encoding-index-simpchinese@1.20141219.5
+	encoding-index-singlebyte@1.20141219.5
+	encoding-index-tradchinese@1.20141219.5
+	encoding@0.2.33
+	encoding_index_tests@0.1.4
+	encoding_rs@0.8.35
+	endi@1.1.1
+	enumflags2@0.7.12
+	enumflags2_derive@0.7.12
+	env_filter@0.1.4
+	env_logger@0.11.8
+	epaint@0.33.3
+	epaint_default_fonts@0.33.3
+	equator-macro@0.4.2
+	equator@0.4.2
+	equivalent@1.0.2
+	erased-serde@0.4.9
+	errno@0.3.14
+	error-code@3.3.2
+	euclid@0.22.13
+	event-listener-strategy@0.5.4
+	event-listener@5.4.1
+	exr@1.74.0
+	extended@0.1.0
+	fancy-regex@0.11.0
+	fastrand@2.3.0
+	fax@0.2.6
+	fax_derive@0.2.0
+	fdeflate@0.3.7
+	filedescriptor@0.8.3
+	find-msvc-tools@0.1.9
+	finl_unicode@1.4.0
+	fixedbitset@0.4.2
+	flate2@1.1.9
+	float-cmp@0.9.0
+	fnv@1.0.7
+	foldhash@0.1.5
+	foldhash@0.2.0
+	fontconfig-parser@0.5.8
+	fontdb@0.23.0
+	foreign-types-macros@0.2.3
+	foreign-types-shared@0.1.1
+	foreign-types-shared@0.3.1
+	foreign-types@0.3.2
+	foreign-types@0.5.0
+	form_urlencoded@1.2.2
+	fsevent-sys@4.1.0
+	futures-channel@0.3.31
+	futures-core@0.3.31
+	futures-executor@0.3.31
+	futures-io@0.3.31
+	futures-lite@2.6.1
+	futures-macro@0.3.31
+	futures-sink@0.3.31
+	futures-task@0.3.31
+	futures-util@0.3.31
+	futures@0.3.31
+	generic-array@0.14.7
+	gethostname@1.1.0
+	getrandom@0.2.17
+	getrandom@0.3.4
+	gif@0.14.1
+	gl_generator@0.14.0
+	glow@0.16.0
+	glutin-winit@0.5.0
+	glutin@0.32.3
+	glutin_egl_sys@0.7.1
+	glutin_glx_sys@0.6.1
+	glutin_wgl_sys@0.6.1
+	gpu-alloc-types@0.3.0
+	gpu-alloc@0.6.0
+	gpu-allocator@0.27.0
+	gpu-descriptor-types@0.2.0
+	gpu-descriptor@0.3.2
+	half@2.7.1
+	hashbrown@0.15.5
+	hashbrown@0.16.1
+	heck@0.3.3
+	heck@0.5.0
+	hermit-abi@0.1.19
+	hermit-abi@0.5.2
+	hex@0.4.3
+	hexf-parse@0.2.1
+	http@1.4.0
+	httparse@1.10.1
+	humantime@2.3.0
+	iana-time-zone-haiku@0.1.2
+	iana-time-zone@0.1.65
+	iced-x86@1.21.0
+	icu_collections@2.1.1
+	icu_locale_core@2.1.1
+	icu_normalizer@2.1.1
+	icu_normalizer_data@2.1.1
+	icu_properties@2.1.2
+	icu_properties_data@2.1.2
+	icu_provider@2.1.1
+	ident_case@1.0.1
+	idna@1.1.0
+	idna_adapter@1.2.1
+	image-webp@0.2.4
+	image@0.25.9
+	imagesize@0.14.0
+	imgref@1.12.0
+	indexmap@2.13.0
+	indoc@2.0.7
+	inotify-sys@0.1.5
+	inotify@0.11.0
+	instability@0.3.11
+	interpolate_name@0.2.4
+	interprocess@2.3.1
+	inventory@0.3.21
+	is_terminal_polyfill@1.70.2
+	itertools@0.14.0
+	itoa@1.0.17
+	jiff-static@0.2.19
+	jiff@0.2.19
+	jni-sys@0.3.0
+	jni@0.21.1
+	jobserver@0.1.34
+	js-sys@0.3.85
+	kasuari@0.4.11
+	khronos-egl@6.0.0
+	khronos_api@3.1.0
+	kqueue-sys@1.0.4
+	kqueue@1.1.1
+	kurbo@0.13.0
+	lab@0.11.0
+	lazy_static@1.5.0
+	lebe@0.5.3
+	libc@0.2.180
+	libfuzzer-sys@0.4.10
+	libloading@0.8.9
+	libm@0.2.16
+	libredox@0.1.12
+	line-clipping@0.3.5
+	linux-raw-sys@0.11.0
+	linux-raw-sys@0.4.15
+	litemap@0.8.1
+	litrs@1.0.0
+	lock_api@0.4.14
+	log-mdc@0.1.0
+	log4rs@1.4.0
+	log@0.4.29
+	loop9@0.1.5
+	lru@0.16.3
+	mac_address@1.1.8
+	mach2@0.4.3
+	malloc_buf@0.0.6
+	maybe-rayon@0.1.1
+	memchr@2.8.0
+	memmap2@0.9.9
+	memmem@0.1.1
+	memoffset@0.9.1
+	metal@0.32.0
+	minimal-lexical@0.2.1
+	miniz_oxide@0.8.9
+	mio@1.1.1
+	mock_instant@0.6.0
+	moxcms@0.7.11
+	naga@27.0.3
+	native-tls@0.2.14
+	ndk-context@0.1.1
+	ndk-sys@0.6.0+11769913
+	ndk@0.9.0
+	new_debug_unreachable@1.0.6
+	nix@0.29.0
+	nohash-hasher@0.2.0
+	nom@7.1.3
+	nom@8.0.0
+	noop_proc_macro@0.3.0
+	normpath@1.5.0
+	notify-types@2.1.0
+	notify@8.2.0
+	ntapi@0.4.2
+	num-bigint@0.4.6
+	num-conv@0.2.0
+	num-derive@0.4.2
+	num-integer@0.1.46
+	num-rational@0.4.2
+	num-traits@0.2.19
+	num_cpus@1.17.0
+	num_enum@0.7.5
+	num_enum_derive@0.7.5
+	num_threads@0.1.7
+	objc-sys@0.3.5
+	objc2-app-kit@0.2.2
+	objc2-app-kit@0.3.2
+	objc2-audio-toolbox@0.3.2
+	objc2-cloud-kit@0.2.2
+	objc2-contacts@0.2.2
+	objc2-core-audio-types@0.3.2
+	objc2-core-audio@0.3.2
+	objc2-core-data@0.2.2
+	objc2-core-foundation@0.3.2
+	objc2-core-graphics@0.3.2
+	objc2-core-image@0.2.2
+	objc2-core-location@0.2.2
+	objc2-encode@4.1.0
+	objc2-foundation@0.2.2
+	objc2-foundation@0.3.2
+	objc2-io-kit@0.3.2
+	objc2-io-surface@0.3.2
+	objc2-link-presentation@0.2.2
+	objc2-metal@0.2.2
+	objc2-quartz-core@0.2.2
+	objc2-symbols@0.2.2
+	objc2-ui-kit@0.2.2
+	objc2-uniform-type-identifiers@0.2.2
+	objc2-user-notifications@0.2.2
+	objc2@0.5.2
+	objc2@0.6.3
+	objc@0.2.7
+	once_cell@1.21.3
+	once_cell_polyfill@1.70.2
+	opener@0.8.4
+	openssl-macros@0.1.1
+	openssl-probe@0.1.6
+	openssl-sys@0.9.111
+	openssl@0.10.75
+	option-ext@0.2.0
+	orbclient@0.3.50
+	ordered-float@2.10.1
+	ordered-float@4.6.0
+	ordered-float@5.1.0
+	ordered-stream@0.2.0
+	owned_ttf_parser@0.25.1
+	parking@2.2.1
+	parking_lot@0.12.5
+	parking_lot_core@0.9.12
+	paste@1.0.15
+	pastey@0.1.1
+	pem-rfc7468@0.7.0
+	percent-encoding@2.3.2
+	pest@2.8.6
+	pest_derive@2.8.6
+	pest_generator@2.8.6
+	pest_meta@2.8.6
+	phf@0.11.3
+	phf_codegen@0.11.3
+	phf_generator@0.11.3
+	phf_macros@0.11.3
+	phf_shared@0.11.3
+	pico-args@0.5.0
+	pin-project-internal@1.1.10
+	pin-project-lite@0.2.16
+	pin-project@1.1.10
+	pin-utils@0.1.0
+	piper@0.2.4
+	pkg-config@0.3.32
+	png@0.17.16
+	png@0.18.0
+	polling@3.11.0
+	pollster@0.4.0
+	portable-atomic-util@0.2.5
+	portable-atomic@1.13.1
+	potential_utf@0.1.4
+	powerfmt@0.2.0
+	ppv-lite86@0.2.21
+	presser@0.3.1
+	proc-macro-crate@3.4.0
+	proc-macro-error-attr@1.0.4
+	proc-macro-error@1.0.4
+	proc-macro2@1.0.106
+	profiling-procmacros@1.0.17
+	profiling@1.0.17
+	pxfm@0.1.27
+	qoi@0.4.1
+	quick-error@2.0.1
+	quick-xml@0.38.4
+	quote@1.0.44
+	r-efi@5.3.0
+	rand@0.8.5
+	rand@0.9.2
+	rand_chacha@0.9.0
+	rand_core@0.6.4
+	rand_core@0.9.5
+	range-alloc@0.1.4
+	ratatui-core@0.1.0
+	ratatui-crossterm@0.1.0
+	ratatui-macros@0.7.0
+	ratatui-termwiz@0.1.0
+	ratatui-widgets@0.3.0
+	ratatui@0.30.0
+	rav1e@0.8.1
+	ravif@0.12.0
+	raw-window-handle@0.6.2
+	rayon-core@1.13.0
+	rayon@1.11.0
+	recvmsg@1.0.0
+	redox_syscall@0.4.1
+	redox_syscall@0.5.18
+	redox_syscall@0.7.0
+	redox_users@0.5.2
+	regex-automata@0.4.14
+	regex-syntax@0.8.9
+	regex@1.12.3
+	renderdoc-sys@1.1.0
+	resvg@0.46.0
+	rfd@0.17.2
+	rgb@0.8.52
+	ring@0.17.14
+	rodio@0.21.1
+	roxmltree@0.20.0
+	roxmltree@0.21.1
+	rustc-hash@1.1.0
+	rustc-hash@2.1.1
+	rustc_version@0.4.1
+	rustix@0.38.44
+	rustix@1.1.3
+	rustls-pki-types@1.14.0
+	rustls-webpki@0.103.9
+	rustls@0.23.36
+	rustversion@1.0.22
+	rustybuzz@0.20.1
+	ryu@1.0.22
+	same-file@1.0.6
+	schannel@0.1.28
+	scoped-tls@1.0.1
+	scopeguard@1.2.0
+	sctk-adwaita@0.10.1
+	security-framework-sys@2.15.0
+	security-framework@2.11.1
+	self-replace@1.5.0
+	semver@1.0.27
+	serde-value@0.7.0
+	serde@1.0.228
+	serde_core@1.0.228
+	serde_derive@1.0.228
+	serde_json@1.0.149
+	serde_repr@0.1.20
+	serde_spanned@1.0.4
+	serde_yaml@0.9.34+deprecated
+	sha2@0.10.9
+	shlex@1.3.0
+	signal-hook-mio@0.2.5
+	signal-hook-registry@1.4.8
+	signal-hook@0.3.18
+	simd-adler32@0.3.8
+	simd_helpers@0.1.0
+	simplecss@0.2.2
+	siphasher@1.0.2
+	slab@0.4.12
+	slotmap@1.1.1
+	smallvec@1.15.1
+	smithay-client-toolkit@0.19.2
+	smithay-client-toolkit@0.20.0
+	smithay-clipboard@0.7.3
+	smol_str@0.2.2
+	spirv@0.3.0+sdk-1.3.268.0
+	stable_deref_trait@1.2.1
+	static_assertions@1.1.0
+	strict-num@0.1.1
+	strsim@0.11.1
+	strsim@0.8.0
+	structopt-derive@0.4.18
+	structopt@0.3.26
+	strum@0.27.2
+	strum_macros@0.27.2
+	subtle@2.6.1
+	svgtypes@0.16.1
+	symphonia-bundle-flac@0.5.5
+	symphonia-bundle-mp3@0.5.5
+	symphonia-codec-aac@0.5.5
+	symphonia-codec-pcm@0.5.5
+	symphonia-codec-vorbis@0.5.5
+	symphonia-core@0.5.5
+	symphonia-format-isomp4@0.5.5
+	symphonia-format-ogg@0.5.5
+	symphonia-format-riff@0.5.5
+	symphonia-metadata@0.5.5
+	symphonia-utils-xiph@0.5.5
+	symphonia@0.5.5
+	syn@1.0.109
+	syn@2.0.114
+	synstructure@0.13.2
+	sysinfo@0.38.0
+	tempfile@3.24.0
+	termcolor@1.4.1
+	terminfo@0.9.0
+	termios@0.3.3
+	termwiz@0.23.3
+	textwrap@0.11.0
+	thiserror-impl@1.0.69
+	thiserror-impl@2.0.18
+	thiserror@1.0.69
+	thiserror@2.0.18
+	thread-id@5.1.0
+	tiff@0.10.3
+	time-core@0.1.8
+	time@0.3.47
+	tiny-skia-path@0.11.4
+	tiny-skia@0.11.4
+	tinystr@0.8.2
+	tinyvec@1.10.0
+	tinyvec_macros@0.1.1
+	toml@0.9.11+spec-1.1.0
+	toml_datetime@0.7.5+spec-1.1.0
+	toml_edit@0.23.10+spec-1.0.0
+	toml_parser@1.0.6+spec-1.1.0
+	toml_writer@1.0.6+spec-1.1.0
+	tracing-attributes@0.1.31
+	tracing-core@0.1.36
+	tracing@0.1.44
+	ttf-parser@0.25.1
+	type-map@0.5.1
+	typed-path@0.12.2
+	typeid@1.0.3
+	typemap-ors@1.0.0
+	typenum@1.19.0
+	typetag-impl@0.2.21
+	typetag@0.2.21
+	ucd-trie@0.1.7
+	uds_windows@1.1.0
+	unicode-bidi-mirroring@0.4.0
+	unicode-bidi@0.3.18
+	unicode-ccc@0.4.0
+	unicode-ident@1.0.22
+	unicode-properties@0.1.4
+	unicode-script@0.5.8
+	unicode-segmentation@1.12.0
+	unicode-truncate@2.0.1
+	unicode-vo@0.1.0
+	unicode-width@0.1.14
+	unicode-width@0.2.2
+	unicode-xid@0.2.6
+	unsafe-any-ors@1.0.0
+	unsafe-libyaml@0.2.11
+	untrusted@0.9.0
+	ureq-proto@0.5.3
+	ureq@3.2.0
+	url@2.5.8
+	urlencoding@2.1.3
+	usvg@0.46.0
+	utf-8@0.7.6
+	utf8_iter@1.0.4
+	utf8parse@0.2.2
+	uuid@1.20.0
+	v_frame@0.3.9
+	vcpkg@0.2.15
+	vec_map@0.8.2
+	version_check@0.9.5
+	vtparse@0.6.2
+	walkdir@2.5.0
+	wasi@0.11.1+wasi-snapshot-preview1
+	wasip2@1.0.2+wasi-0.2.9
+	wasm-bindgen-futures@0.4.58
+	wasm-bindgen-macro-support@0.2.108
+	wasm-bindgen-macro@0.2.108
+	wasm-bindgen-shared@0.2.108
+	wasm-bindgen@0.2.108
+	wayland-backend@0.3.12
+	wayland-client@0.31.12
+	wayland-csd-frame@0.3.0
+	wayland-cursor@0.31.12
+	wayland-protocols-experimental@20250721.0.1
+	wayland-protocols-misc@0.3.10
+	wayland-protocols-plasma@0.3.10
+	wayland-protocols-wlr@0.3.10
+	wayland-protocols@0.32.10
+	wayland-scanner@0.31.8
+	wayland-sys@0.31.8
+	web-sys@0.3.85
+	web-time@1.1.0
+	webbrowser@1.1.0
+	webpki-root-certs@1.0.6
+	webpki-roots@1.0.6
+	weezl@0.1.12
+	wezterm-bidi@0.2.3
+	wezterm-blob-leases@0.1.1
+	wezterm-color-types@0.3.0
+	wezterm-dynamic-derive@0.1.1
+	wezterm-dynamic@0.2.1
+	wezterm-input-types@0.1.0
+	wgpu-core-deps-apple@27.0.0
+	wgpu-core-deps-emscripten@27.0.0
+	wgpu-core-deps-windows-linux-android@27.0.0
+	wgpu-core@27.0.3
+	wgpu-hal@27.0.4
+	wgpu-types@27.0.1
+	wgpu@27.0.1
+	widestring@1.2.1
+	winapi-i686-pc-windows-gnu@0.4.0
+	winapi-util@0.1.11
+	winapi-x86_64-pc-windows-gnu@0.4.0
+	winapi@0.3.9
+	windows-collections@0.2.0
+	windows-collections@0.3.2
+	windows-core@0.54.0
+	windows-core@0.58.0
+	windows-core@0.61.2
+	windows-core@0.62.2
+	windows-future@0.2.1
+	windows-future@0.3.2
+	windows-implement@0.58.0
+	windows-implement@0.60.2
+	windows-interface@0.58.0
+	windows-interface@0.59.3
+	windows-link@0.1.3
+	windows-link@0.2.1
+	windows-numerics@0.2.0
+	windows-numerics@0.3.1
+	windows-result@0.1.2
+	windows-result@0.2.0
+	windows-result@0.3.4
+	windows-result@0.4.1
+	windows-strings@0.1.0
+	windows-strings@0.4.2
+	windows-strings@0.5.1
+	windows-sys@0.45.0
+	windows-sys@0.52.0
+	windows-sys@0.59.0
+	windows-sys@0.60.2
+	windows-sys@0.61.2
+	windows-targets@0.42.2
+	windows-targets@0.52.6
+	windows-targets@0.53.5
+	windows-threading@0.1.0
+	windows-threading@0.2.1
+	windows@0.54.0
+	windows@0.58.0
+	windows@0.61.3
+	windows@0.62.2
+	windows_aarch64_gnullvm@0.42.2
+	windows_aarch64_gnullvm@0.52.6
+	windows_aarch64_gnullvm@0.53.1
+	windows_aarch64_msvc@0.42.2
+	windows_aarch64_msvc@0.52.6
+	windows_aarch64_msvc@0.53.1
+	windows_i686_gnu@0.42.2
+	windows_i686_gnu@0.52.6
+	windows_i686_gnu@0.53.1
+	windows_i686_gnullvm@0.52.6
+	windows_i686_gnullvm@0.53.1
+	windows_i686_msvc@0.42.2
+	windows_i686_msvc@0.52.6
+	windows_i686_msvc@0.53.1
+	windows_x86_64_gnu@0.42.2
+	windows_x86_64_gnu@0.52.6
+	windows_x86_64_gnu@0.53.1
+	windows_x86_64_gnullvm@0.42.2
+	windows_x86_64_gnullvm@0.52.6
+	windows_x86_64_gnullvm@0.53.1
+	windows_x86_64_msvc@0.42.2
+	windows_x86_64_msvc@0.52.6
+	windows_x86_64_msvc@0.53.1
+	winnow@0.7.14
+	winresource@0.1.30
+	wit-bindgen@0.51.0
+	writeable@0.6.2
+	x11-dl@2.21.0
+	x11rb-protocol@0.13.2
+	x11rb@0.13.2
+	xcursor@0.3.10
+	xkbcommon-dl@0.4.2
+	xkeysym@0.2.1
+	xml-rs@0.8.28
+	xmlwriter@0.1.0
+	y4m@0.8.0
+	yoke-derive@0.8.1
+	yoke@0.8.1
+	zbus-lockstep-macros@0.5.2
+	zbus-lockstep@0.5.2
+	zbus@5.13.2
+	zbus_macros@5.13.2
+	zbus_names@4.3.1
+	zbus_xml@5.1.0
+	zerocopy-derive@0.8.39
+	zerocopy@0.8.39
+	zerofrom-derive@0.1.6
+	zerofrom@0.1.6
+	zeroize@1.8.2
+	zerotrie@0.2.3
+	zerovec-derive@0.11.2
+	zerovec@0.11.5
+	zip@7.4.0
+	zlib-rs@0.6.0
+	zmij@1.0.19
+	zopfli@0.8.3
+	zune-core@0.4.12
+	zune-core@0.5.1
+	zune-inflate@0.2.54
+	zune-jpeg@0.4.21
+	zune-jpeg@0.5.12
+	zvariant@5.9.2
+	zvariant_derive@5.9.2
+	zvariant_utils@3.3.0
+"
+
+inherit cargo desktop
+
+DESCRIPTION="Fast memory scanner and dynamic analysis tool (GUI, TUI and CLI frontends)"
+HOMEPAGE="https://squalr.com/ https://github.com/Squalr/Squalr"
+SRC_URI="
+	https://github.com/Squalr/Squalr/archive/refs/tags/v${PV}.tar.gz -> ${P}.gh.tar.gz
+	${CARGO_CRATE_URIS}
+"
+S="${WORKDIR}/Squalr-${PV}"
+
+LICENSE="GPL-3"
+# Dependent crate licenses (regenerate with: pycargoebuild -i)
+LICENSE+=" Apache-2.0 BSD BSD-2 CC0-1.0 ISC MIT MPL-2.0 Unicode-3.0 Unlicense ZLIB"
+SLOT="0"
+KEYWORDS="~amd64"
+IUSE="cli +gui +tui"
+REQUIRED_USE="|| ( cli gui tui )"
+
+# openssl: squalr-engine -> ureq[native-tls] -> openssl-sys
+# wayland: squalr-engine -> rfd -> wayland-sys (dlopen'd, but probed via pkg-config)
+# gui: eframe/egui with the glow backend, plus rodio for the notification sounds
+DEPEND="
+	dev-libs/openssl:=
+	dev-libs/wayland
+	gui? (
+		media-libs/alsa-lib
+		media-libs/libglvnd
+		virtual/libudev:=
+		x11-libs/libX11
+		x11-libs/libXcursor
+		x11-libs/libXi
+		x11-libs/libXinerama
+		x11-libs/libXrandr
+		x11-libs/libxkbcommon
+	)
+"
+RDEPEND="${DEPEND}"
+BDEPEND="virtual/pkgconfig"
+
+# squalr-tests builds the whole workspace and expects a live target process
+RESTRICT="test"
+
+QA_FLAGS_IGNORED="usr/bin/squalr.*"
+
+
+src_prepare() {
+	# rustup pin to a nightly channel we do not have, and a cargo [unstable]
+	# block (profile-rustflags) that stable cargo refuses to parse.
+	rm -f rust-toolchain.toml .cargo/config.toml || die
+
+	local PATCHES=( "${FILESDIR}"/${P}-*.patch )
+
+	default
+}
+
+src_configure() {
+	local packages=()
+
+	use cli && packages+=( --package squalr-cli )
+	use gui && packages+=( --package squalr )
+	use tui && packages+=( --package squalr-tui )
+
+	cargo_src_configure --locked "${packages[@]}"
+}
+
+src_compile() {
+	# squalr-engine-api and squalr-engine-scanning are gated on
+	# #![feature(portable_simd)] and #![feature(get_mut_unchecked)]
+	export RUSTC_BOOTSTRAP=1
+
+	cargo_src_compile
+}
+
+src_install() {
+	local target_dir
+	target_dir=$(cargo_target_dir)
+
+	if use cli; then
+		dobin "${target_dir}"/squalr-cli
+	fi
+
+	if use tui; then
+		dobin "${target_dir}"/squalr-tui
+	fi
+
+	if use gui; then
+		dobin "${target_dir}"/squalr
+
+		newicon -s 32 squalr/images/app/app_icon.png squalr.png
+		make_desktop_entry squalr Squalr squalr "Development;Debugger;"
+	fi
+
+	einstalldocs
+}
+
+pkg_postinst() {
+	elog "Squalr needs PTRACE_MODE_ATTACH on the target process. Either run it as"
+	elog "root, or grant the capability to the frontend you use:"
+	elog
+	elog "  setcap cap_sys_ptrace=eip /usr/bin/squalr"
+	elog
+	if use tui; then
+		elog "The TUI response timeout is patched to 120s and can be overridden with"
+		elog "SQUALR_TUI_RESPONSE_TIMEOUT_SECS."
+		elog
+	fi
+	if use gui; then
+		elog "The GUI runs on the egui glow backend. Force a backend with WINIT_UNIX_BACKEND"
+		elog "(x11 or wayland) if the default pick misbehaves under your compositor."
+	fi
+}

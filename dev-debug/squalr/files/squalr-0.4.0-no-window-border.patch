@@ -1,0 +1,21 @@
+Drop the outer window border and margin drawn by the GUI.
+
+The app runs with with_decorations(false) and paints its own frame,
+stroked with egui's default noninteractive fg_stroke. Under a compositor
+that already draws a focus ring this doubles up.
+
+Not upstream; cosmetic local preference.
+--- a/squalr/src/app.rs
++++ b/squalr/src/app.rs
+@@ -109,10 +109,7 @@
+         context: &Context,
+         _frame: &mut eframe::Frame,
+     ) {
+-        let app_frame = Frame::new()
+-            .corner_radius(self.corner_radius)
+-            .stroke(context.style().visuals.widgets.noninteractive.fg_stroke)
+-            .outer_margin(2.0);
++        let app_frame = Frame::new().corner_radius(self.corner_radius);
+         let main_window_view = self.main_window_view.clone();
+ 
+         CentralPanel::default()

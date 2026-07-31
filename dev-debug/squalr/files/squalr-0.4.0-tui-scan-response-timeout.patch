@@ -1,0 +1,144 @@
+Raise the hardcoded 3 second response timeout in the TUI scan dispatch path.
+
+The TUI blocks on a synchronous recv_timeout while the engine builds the
+snapshot, reads the entire address space of the target and runs the scan,
+so on any process with a non-trivial RSS every scan reports a timeout and
+ElementScannerPaneState::has_scan_results is never set. Because a subsequent
+scan is gated on that flag, pressing 's' keeps issuing ScanNewRequest and
+resets the snapshot instead of filtering the previous results.
+
+Overridable at runtime via SQUALR_TUI_RESPONSE_TIMEOUT_SECS.
+
+Not upstream; the real fix is to keep the Receiver in the pane state and
+poll it with try_recv from app_tick instead of blocking the key handler.
+Bug: https://github.com/Squalr/Squalr/issues
+--- a/squalr-tui/src/app/command_dispatch_scan.rs
++++ b/squalr-tui/src/app/command_dispatch_scan.rs
+@@ -24,6 +24,19 @@
+ use std::sync::mpsc;
+ use std::time::{Duration, Instant};
+ 
++fn scan_command_response_timeout() -> Duration {
++    static SCAN_COMMAND_RESPONSE_TIMEOUT: std::sync::OnceLock<Duration> = std::sync::OnceLock::new();
++
++    *SCAN_COMMAND_RESPONSE_TIMEOUT.get_or_init(|| {
++        let timeout_in_seconds = std::env::var("SQUALR_TUI_RESPONSE_TIMEOUT_SECS")
++            .ok()
++            .and_then(|timeout_in_seconds| timeout_in_seconds.parse::<u64>().ok())
++            .unwrap_or(120);
++
++        Duration::from_secs(timeout_in_seconds)
++    })
++}
++
+ impl AppShell {
+     pub(super) fn reset_scan_state(
+         &mut self,
+@@ -74,7 +87,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_reset_response) => {
+                 if scan_reset_response.success {
+                     self.app_state.element_scanner_pane_state.has_scan_results = false;
+@@ -144,7 +157,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_collect_values_response) => {
+                 let had_scan_results = self.app_state.element_scanner_pane_state.has_scan_results;
+                 self.app_state.element_scanner_pane_state.last_result_count = scan_collect_values_response.scan_results_metadata.result_count;
+@@ -219,7 +232,7 @@
+                 return;
+             }
+ 
+-            if let Err(receive_error) = response_receiver.recv_timeout(Duration::from_secs(3)) {
++            if let Err(receive_error) = response_receiver.recv_timeout(scan_command_response_timeout()) {
+                 self.app_state
+                     .element_scanner_pane_state
+                     .has_pending_scan_request = false;
+@@ -252,7 +265,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(element_scan_response) => {
+                 self.app_state.element_scanner_pane_state.has_scan_results = true;
+                 self.app_state.element_scanner_pane_state.last_result_count = element_scan_response.scan_results_metadata.result_count;
+@@ -337,7 +350,7 @@
+             return false;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_results_query_response) => {
+                 self.apply_scan_results_query_response(scan_results_query_response, should_update_status_message);
+             }
+@@ -457,7 +470,7 @@
+             return false;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_results_refresh_response) => {
+                 let refreshed_result_count = scan_results_refresh_response.scan_results.len();
+                 self.app_state
+@@ -533,7 +546,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_results_freeze_response) => {
+                 let failed_toggle_count = scan_results_freeze_response
+                     .failed_freeze_toggle_scan_result_refs
+@@ -605,7 +618,7 @@
+             let _ = response_sender.send(project_items_add_response);
+         });
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(project_items_add_response) => {
+                 self.app_state.scan_results_pane_state.status_message = if project_items_add_response.success {
+                     format!(
+@@ -669,7 +682,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(scan_results_delete_response) => {
+                 if scan_results_delete_response.deleted_result_count < scan_results_delete_response.requested_result_count {
+                     self.app_state.scan_results_pane_state.status_message = format!(
+@@ -749,7 +762,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(_scan_results_set_property_response) => {
+                 self.app_state.scan_results_pane_state.status_message = "Committed selected scan result values.".to_string();
+                 self.refresh_scan_results_page(squalr_engine);
+@@ -856,7 +869,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(process_list_response) => {
+                 let process_count = process_list_response.processes.len();
+                 self.app_state
+@@ -926,7 +939,7 @@
+             return;
+         }
+ 
+-        match response_receiver.recv_timeout(Duration::from_secs(3)) {
++        match response_receiver.recv_timeout(scan_command_response_timeout()) {
+             Ok(process_open_response) => {
+                 let opened_process = process_open_response.opened_process_info;
+                 self.app_state

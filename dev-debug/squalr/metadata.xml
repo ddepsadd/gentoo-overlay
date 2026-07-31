@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>depsad@example.org</email>
+		<name>depsad</name>
+	</maintainer>
+	<longdescription lang="en">
+		Squalr is a dynamic-analysis / reverse-engineering tool written in Rust:
+		a multi-threaded, SIMD-accelerated scanner for the memory of a running
+		process, with pointer scans, array and string scans, a memory viewer and
+		a project system. This package builds the terminal (ratatui) frontend
+		only; the engine crates are shared with the CLI and egui GUI builds.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">Squalr/Squalr</remote-id>
+		<bugs-to>https://github.com/Squalr/Squalr/issues</bugs-to>
+	</upstream>
+</pkgmetadata>
