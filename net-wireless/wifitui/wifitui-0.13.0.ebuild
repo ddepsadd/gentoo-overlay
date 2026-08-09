@@ -11,8 +11,9 @@ SRC_URI="https://github.com/shazow/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 # Generate this yourself (see below), then host it or drop it in DISTDIR:
 SRC_URI+=" https://github.com/ddepsadd/gentoo-overlay/releases/download/${PN}-${PV}/${P}-deps.tar.xz"
 
-# MIT: wifitui + most deps. BSD: google/uuid, jessevdk/go-flags, golang.org/x/*.
-# BSD-2: godbus/dbus. Verify exhaustively with dev-go/lichen against the binary.
+# MIT: wifitui + большинство deps. BSD-3: atotto/clipboard, google/uuid,
+# jessevdk/go-flags, golang.org/x/sys. BSD-2: godbus/dbus.
+# Проверено lichen на 0.13.0 (28 модулей в бинаре).
 LICENSE="BSD BSD-2 MIT"
 SLOT="0"
 KEYWORDS="~amd64"
