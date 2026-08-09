@@ -36,17 +36,18 @@ src_install() {
 
 	{
 		echo '#!/bin/sh'
+		echo 'export QT_QPA_PLATFORM=wayland'
 		echo 'exec /opt/'"${PN}"'/PINCE.AppImage --appimage-extract-and-run "$@"'
 	} > "${T}/pince" || die
 	dobin "${T}/pince"
 
 	local icon
-	for icon in PINCE.png .DirIcon usr/share/icons/hicolor/256x256/apps/io.github.korcankaraokcu.PINCE.png; do
-		if [[ -f ${WORKDIR}/squashfs-root/${icon} ]]; then
-			newicon "${WORKDIR}/squashfs-root/${icon}" pince.png
-			break
-		fi
+	for icon in "${WORKDIR}"/squashfs-root/usr/share/icons/hicolor/*/apps/PINCE.png; do
+		[[ -f ${icon} ]] || continue
+		local size=${icon%/apps/*}
+		size=${size##*/}
+		newicon -s "${size%x*}" "${icon}" pince.png
 	done
 
-	make_desktop_entry "env QT_QPA_PLATFORM=wayland pince" PINCE pince "Development;Debugger;"
+	make_desktop_entry pince PINCE pince "Development;Debugger;"
 }
