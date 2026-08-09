@@ -14,12 +14,29 @@ jobs:
       - name: Add guru
         run: |
           git clone --depth=1 https://github.com/gentoo-mirror/guru.git /var/db/repos/guru
+          rm -rf /etc/portage/repos.conf
           mkdir -p /etc/portage/repos.conf
-          printf '[guru]\nlocation = /var/db/repos/guru\nauto-sync = no\n' \
-            > /etc/portage/repos.conf/guru.conf
+          cat > /etc/portage/repos.conf/repos.conf <<'EOF'
+          [DEFAULT]
+          main-repo = gentoo
+
+          [gentoo]
+          location = /var/db/repos/gentoo
+          auto-sync = no
+
+          [guru]
+          location = /var/db/repos/guru
+          auto-sync = no
+          EOF
 
       - name: Mark workspace safe
         run: git config --global --add safe.directory '*'
+
+      - name: Debug repos
+        run: |
+          ls -la /etc/portage/repos.conf* || true
+          cat /etc/portage/repos.conf/* 2>/dev/null || true
+          ls -d /var/db/repos/*
 
       - name: Run pkgcheck
         run: pkgcheck --color y ci --exit GentooCI --net
