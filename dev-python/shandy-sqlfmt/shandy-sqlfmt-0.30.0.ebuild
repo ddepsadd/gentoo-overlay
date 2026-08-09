@@ -25,7 +25,7 @@ IUSE="jinjafmt"
 
 RDEPEND="
 	>=dev-python/click-8.1[${PYTHON_USEDEP}]
-	
+
 	>=dev-python/tqdm-4.67[${PYTHON_USEDEP}]
 	>=dev-python/platformdirs-2.4[${PYTHON_USEDEP}]
 	>=dev-python/jinja2-3[${PYTHON_USEDEP}]

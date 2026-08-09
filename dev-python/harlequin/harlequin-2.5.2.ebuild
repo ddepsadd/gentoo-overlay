@@ -29,9 +29,9 @@ RDEPEND="
 	>=dev-python/rich-click-1.8[${PYTHON_USEDEP}]
 	>=dev-python/shandy-sqlfmt-0.28.2[${PYTHON_USEDEP}]
 	>=dev-python/platformdirs-3.10[${PYTHON_USEDEP}]
-	
+
 	>=dev-python/tomlkit-0.12.5[${PYTHON_USEDEP}]
-	
+
 	>=dev-python/questionary-2[${PYTHON_USEDEP}]
 	python_targets_python3_14? (
 		>=dev-python/duckdb-1.4.2[${PYTHON_USEDEP}]

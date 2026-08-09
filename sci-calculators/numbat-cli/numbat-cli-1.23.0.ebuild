@@ -257,7 +257,7 @@ CRATES="
 
 inherit cargo
 
-DESCRIPTION="A statically typed programming language for scientific computations with first class support for physical dimensions and units."
+DESCRIPTION="A statically typed programming language for scientific computations with first class support for physical dimensions and units"
 HOMEPAGE="https://numbat.dev/"
 SRC_URI="
 	${CARGO_CRATE_URIS}

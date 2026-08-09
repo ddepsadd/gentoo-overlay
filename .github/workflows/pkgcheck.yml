@@ -3,8 +3,23 @@ on: [push, pull_request]
 jobs:
   scan:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pkgcore/pkgcheck:latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pkgcore/pkgcheck-action@v1
-        with:
-          args: --net
+
+      - name: Sync gentoo
+        run: pmaint sync gentoo
+
+      - name: Add guru
+        run: |
+          git clone --depth=1 https://github.com/gentoo-mirror/guru.git /var/db/repos/guru
+          mkdir -p /etc/portage/repos.conf
+          printf '[guru]\nlocation = /var/db/repos/guru\nauto-sync = no\n' \
+            > /etc/portage/repos.conf/guru.conf
+
+      - name: Mark workspace safe
+        run: git config --global --add safe.directory '*'
+
+      - name: Run pkgcheck
+        run: pkgcheck --color y ci --exit GentooCI --net
