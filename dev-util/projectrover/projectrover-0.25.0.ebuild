@@ -10,7 +10,7 @@ HOMEPAGE="https://github.com/lextudio/ProjectRover"
 SRC_URI="https://github.com/lextudio/ProjectRover/releases/download/v${PV}/ProjectRover-linux-x64.zip"
 S="${WORKDIR}/${P}"
 
-LICENSE="AGPL-3.0 MIT"
+LICENSE="AGPL-3 MIT"
 SLOT="0"
 KEYWORDS="-* ~amd64"
 RESTRICT="bindist mirror strip test"
