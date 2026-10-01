@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>depsad@users.noreply.github.com</email>
+		<name>depsad</name>
+	</maintainer>
+	<longdescription lang="en">
+		Stasis is a context-aware, event-driven Wayland idle manager written in
+		Rust. It supports sequential configurable timeouts, media-aware idle
+		handling, application-specific inhibitors, the Wayland idle-inhibit
+		protocol, session D-Bus inhibit traffic, and manual inhibition via CLI
+		or a StatusNotifier tray frontend.
+	</longdescription>
+	<use>
+		<flag name="notify">Enable desktop notifications via <pkg>x11-libs/libnotify</pkg></flag>
+		<flag name="pulseaudio">Enable media/call detection via pactl from <pkg>media-sound/pulseaudio-utils</pkg></flag>
+	</use>
+	<upstream>
+		<remote-id type="github">saltnpepper97/stasis</remote-id>
+		<bugs-to>https://github.com/saltnpepper97/stasis/issues</bugs-to>
+		<doc>https://saltnpepper97.github.io/stasis-site/</doc>
+	</upstream>
+</pkgmetadata>
