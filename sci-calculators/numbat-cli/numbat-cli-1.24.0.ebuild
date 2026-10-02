@@ -118,8 +118,8 @@ CRATES="
 	num-rational@0.4.2
 	num-traits@0.2.19
 	numbat-exchange-rates@0.6.0
-	numbat@1.23.0
-	numbat-cli@1.23.0
+	numbat@1.24.0
+	numbat-cli@1.24.0
 	once_cell@1.21.3
 	once_cell_polyfill@1.70.1
 	option-ext@0.2.0
@@ -255,9 +255,11 @@ CRATES="
 	zerovec@0.11.2
 "
 
+RUST_MIN_VER="1.88.0"
+
 inherit cargo
 
-DESCRIPTION="A statically typed programming language for scientific computations with first class support for physical dimensions and units"
+DESCRIPTION="Statically typed programming language for scientific computations with units"
 HOMEPAGE="https://numbat.dev/"
 SRC_URI="
 	${CARGO_CRATE_URIS}
