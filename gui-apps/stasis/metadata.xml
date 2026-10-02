@@ -14,7 +14,7 @@
 	</longdescription>
 	<use>
 		<flag name="notify">Enable desktop notifications via <pkg>x11-libs/libnotify</pkg></flag>
-		<flag name="pulseaudio">Enable media/call detection via pactl from <pkg>media-sound/pulseaudio-utils</pkg></flag>
+		<flag name="pulseaudio">Enable media/call detection via pactl from <pkg>media-libs/libpulse</pkg></flag>
 	</use>
 	<upstream>
 		<remote-id type="github">saltnpepper97/stasis</remote-id>

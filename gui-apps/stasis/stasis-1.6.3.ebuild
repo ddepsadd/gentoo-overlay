@@ -251,7 +251,7 @@ CRATES="
 
 RUST_MIN_VER="1.85.0"
 
-inherit cargo systemd
+inherit cargo desktop systemd
 
 DESCRIPTION="A modern Wayland idle manager that knows when to step back"
 HOMEPAGE="https://github.com/saltnpepper97/stasis"
@@ -274,7 +274,7 @@ DEPEND="dev-libs/wayland"
 RDEPEND="
 	${DEPEND}
 	notify? ( x11-libs/libnotify )
-	pulseaudio? ( media-sound/pulseaudio-utils )
+	pulseaudio? ( media-libs/libpulse )
 "
 BDEPEND="virtual/pkgconfig"
 
