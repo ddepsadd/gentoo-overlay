@@ -8,30 +8,28 @@ inherit desktop xdg
 DESCRIPTION="Cake Wallet — non-custodial multi-currency wallet (prebuilt Linux bundle)"
 HOMEPAGE="https://cakewallet.com"
 SRC_URI="https://github.com/cake-tech/cake_wallet/releases/download/v${PV}/Cake_Wallet_v${PV}_Linux.tar.xz"
+S="${WORKDIR}/Cake_Wallet_v${PV}_Linux"
 
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="-* ~amd64"
 
-# Published upstream SHA256 — verify by eye against the GitHub release on every bump.
-CW_SHA256="aff7000b9bcaf2a7e7636ec7bcf4667f16d6b1f5b3a256b9fb255a841499ca84"
+# SHA256 of the release asset as published by GitHub (asset digest) —
+# re-check on every bump: github.com/cake-tech/cake_wallet/releases
+CW_SHA256="c24310b8f0a111580e59f38b48cfd40f66c6e4353d7629bee38b049e56b91025"
 
 RESTRICT="strip mirror bindist"
 QA_PREBUILT="opt/cake-wallet/*"
 
 RDEPEND="
-	dev-libs/glib
-	x11-libs/gtk+:3
+	app-arch/bzip2
 	app-crypt/libsecret
-	x11-libs/libX11
+	dev-libs/glib:2
 	media-libs/mesa
-	sys-libs/zlib
+	virtual/zlib
+	x11-libs/gtk+:3
+	x11-libs/libX11
 "
-
-# NOTE: verify the tarball's root dir name after the first unpack:
-#   tar tf Cake_Wallet_v6.2.0_Linux.tar.xz | head
-# and adjust S accordingly.
-S="${WORKDIR}/Cake_Wallet_v6.2.0_Linux"
 
 src_unpack() {
 	local got
@@ -42,23 +40,17 @@ src_unpack() {
 }
 
 src_install() {
-	# Drop the whole Flutter bundle into /opt, preserving perms/symlinks.
+	# Whole Flutter bundle into /opt, preserving perms/symlinks.
 	dodir /opt/cake-wallet
 	cp -a "${S}"/. "${ED}/opt/cake-wallet/" || die "install of bundle failed"
+	fperms 0755 /opt/cake-wallet/cake_wallet
 
-	# NOTE: confirm the executable name inside the bundle; adjust if not cake_wallet.
-	fperms +x /opt/cake-wallet/cake_wallet
-
-	# Launcher shim.
-	dodir /usr/bin
-	cat > "${T}/cake-wallet" <<-EOF
+	cat > "${T}/cake-wallet" <<-EOF || die
 		#!/bin/sh
 		exec /opt/cake-wallet/cake_wallet "\$@"
 	EOF
 	dobin "${T}/cake-wallet"
 
-	# Desktop entry.
-	# NOTE: fix the icon path to a real PNG inside the bundle if this one is wrong.
 	make_desktop_entry cake-wallet "Cake Wallet" \
 		"/opt/cake-wallet/data/flutter_assets/assets/images/app_logo.png" \
 		"Network;Finance;"
