@@ -25,9 +25,10 @@ RESTRICT="network-sandbox strip test"
 RDEPEND="
 	dev-libs/icu
 	dev-libs/openssl
-	sys-libs/zlib
+	virtual/zlib
 "
-BDEPEND=">=dev-dotnet/dotnet-sdk-bin-8.0"
+# Upstream moved to net10.0 in 3.10.0.
+BDEPEND=">=dev-dotnet/dotnet-sdk-bin-10.0"
 
 # Silence QA scanners on the bundled .NET runtime shared objects.
 QA_PREBUILT="opt/${MY_PN}/*"
@@ -42,10 +43,10 @@ src_compile() {
 	export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 	mkdir -p "${HOME}" "${NUGET_PACKAGES}" || die
 
-	# Mirrors the upstream Linux CI publish step.
+	# Mirrors the upstream Linux CI publish step (DOTNET_RUNTIME: net10.0).
 	dotnet publish de4dot/de4dot.csproj \
 		--configuration Release \
-		--framework net8.0 \
+		--framework net10.0 \
 		--runtime linux-x64 \
 		--self-contained true \
 		-p:UseAppHost=true \
